@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Logs do Sistema</h2>
+    
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Operação</th>
+                    <th>Tabela</th>
+                    <th>Registro</th>
+                    <th>Data</th>
+                    <th>IP</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.id }}</td>
+                    <td>{{ log.tipo_operacao }}</td>
+                    <td>{{ log.tabela_afetada }}</td>
+                    <td>{{ log.id_registro }}</td>
+                    <td>{{ log.data_operacao }}</td>
+                    <td>{{ log.ip_origem }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info" data-bs-toggle="modal" 
+                                data-bs-target="#logModal{{ log.id }}">
+                            <i class="bi bi-eye"></i> Detalhes
+                        </button>
+                    </td>
+                </tr>
+                <div class="modal fade" id="logModal{{ log.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Detalhes do Log #{{ log.id }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Dados Anteriores:</h6>
+                                        <pre>{{ log.dados_anteriores }}</pre>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Dados Novos:</h6>
+                                        <pre>{{ log.dados_novos }}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

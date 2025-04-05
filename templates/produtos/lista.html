@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Lista de Produtos</h2>
+    <a href="{{ url_for('cadastrar_produto') }}" class="btn btn-primary mb-3">Cadastrar Novo Produto</a>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Descrição</th>
+                <th>Preço</th>
+                <th>Estoque</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for produto in produtos %}
+                <tr>
+                    <td>{{ produto.id }}</td>
+                    <td>{{ produto.nome }}</td>
+                    <td>{{ produto.descricao }}</td>
+                    <td>R$ {{ "%.2f"|format(produto.preco) }}</td>
+                    <td>{{ produto.estoque }}</td>
+                    <td>
+                        <a href="{{ url_for('obter_produto', id=produto.id) }}" class="btn btn-info btn-sm">Ver</a>
+                        <a href="{{ url_for('editar_produto', id=produto.id) }}" class="btn btn-warning btn-sm">Editar</a>
+                        <form action="{{ url_for('deletar_produto', id=produto.id) }}" method="POST" style="display:inline;">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

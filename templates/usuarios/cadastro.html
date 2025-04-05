@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Cadastrar Novo Usuário</h2>
+    
+    {% if errors %}
+        <div class="alert alert-danger alert-dismissible fade show">
+            <ul class="mb-0">
+                {% for error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('cadastrar_usuario') }}" class="needs-validation" novalidate>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="nome" class="form-label">Nome</label>
+                <input type="text" class="form-control {% if errors and 'nome' in errors %}is-invalid{% endif %}" 
+                       id="nome" name="nome" value="{{ form_data.nome if form_data else '' }}" 
+                       required minlength="3">
+                <div class="invalid-feedback">
+                    {% if errors and 'nome' in errors %}
+                        {{ errors.nome }}
+                    {% else %}
+                        Por favor, insira um nome válido (mínimo 3 caracteres).
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control {% if errors and 'email' in errors %}is-invalid{% endif %}" 
+                       id="email" name="email" value="{{ form_data.email if form_data else '' }}" 
+                       required>
+                <div class="invalid-feedback">
+                    {% if errors and 'email' in errors %}
+                        {{ errors.email }}
+                    {% else %}
+                        Por favor, insira um email válido.
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <label for="senha" class="form-label">Senha</label>
+                <input type="password" class="form-control {% if errors and 'senha' in errors %}is-invalid{% endif %}" 
+                       id="senha" name="senha" required minlength="6">
+                <div class="invalid-feedback">
+                    {% if errors and 'senha' in errors %}
+                        {{ errors.senha }}
+                    {% else %}
+                        A senha deve ter no mínimo 6 caracteres.
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="col-12 mt-4">
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('listar_usuarios') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Voltar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

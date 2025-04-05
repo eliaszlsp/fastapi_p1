@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Cadastrar Novo Produto</h2>
+    <form method="POST" action="{{ url_for('cadastrar_produto') }}">
+        <div class="form-group">
+            <label for="nome">Nome</label>
+            <input type="text" class="form-control {% if errors and 'nome' in errors %}is-invalid{% endif %}" id="nome" name="nome" value="{{ form_data.nome if form_data else '' }}" required>
+            {% if errors and 'nome' in errors %}
+                <div class="invalid-feedback">{{ errors.nome }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="descricao">Descrição</label>
+            <textarea class="form-control" id="descricao" name="descricao">{{ form_data.descricao if form_data else '' }}</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="preco">Preço</label>
+            <input type="number" step="0.01" class="form-control {% if errors and 'preco' in errors %}is-invalid{% endif %}" id="preco" name="preco" value="{{ form_data.preco if form_data else '' }}" required>
+            {% if errors and 'preco' in errors %}
+                <div class="invalid-feedback">{{ errors.preco }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="estoque">Estoque</label>
+            <input type="number" class="form-control {% if errors and 'estoque' in errors %}is-invalid{% endif %}" id="estoque" name="estoque" value="{{ form_data.estoque if form_data else '' }}" required>
+            {% if errors and 'estoque' in errors %}
+                <div class="invalid-feedback">{{ errors.estoque }}</div>
+            {% endif %}
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <a href="{{ url_for('listar_produtos') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

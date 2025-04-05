@@ -5,8 +5,8 @@ from fastapi.templating import Jinja2Templates
 from starlette.requests import Request
 from starlette.middleware.sessions import SessionMiddleware
 import uvicorn
-from controllers.produto_controller import router as produto_router
-from controllers.usuario_controller import router as usuario_router
+from routes.produtos_routes import router as produto_router
+from routes.usuario_routes import router as usuario_router
 
 app = FastAPI(title="Sistema de Gerenciamento")
 

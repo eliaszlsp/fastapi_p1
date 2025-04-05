@@ -18,7 +18,6 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/usuarios", tags=["usuarios"])
 templates = Jinja2Templates(directory="templates")
 
 def set_flash(request: Request, message: str, category: str = "success"):
@@ -34,9 +33,12 @@ def get_flash(request: Request):
         return flash
     return None
 
+
+"""
 @router.get("/", response_class=HTMLResponse, name="listar_usuarios")
-async def listar_usuarios(request: Request, db: mysql.connector.MySQLConnection = Depends(get_db)):
-    """Lista todos os usuários."""
+async def listar_usuarios(request: Request, db: mysql.connector.MySQLConnection = Depends(get_db)):Lista todos os usuários."""
+    
+def get_all_users_controllers(request: Request, db: mysql.connector.MySQLConnection = Depends(get_db)):
     try:
         usuarios = get_all_usuarios(db)
         flash = get_flash(request)
@@ -52,14 +54,18 @@ async def listar_usuarios(request: Request, db: mysql.connector.MySQLConnection 
             {"request": request, "usuarios": [], "messages": [{"message": "Erro ao carregar usuários", "category": "danger"}]}
         )
 
+"""
 @router.get("/cadastrar", response_class=HTMLResponse, name="form_cadastrar_usuario")
 async def form_cadastrar_usuario(request: Request):
-    """Exibe o formulário de cadastro de usuário."""
+Exibe o formulário de cadastro de usuário."""
+def form_cadastrar_usuario(request:Request):
     return templates.TemplateResponse(
         "usuarios/cadastro.html",
         {"request": request, "errors": [], "form_data": {}}
     )
 
+
+"""
 @router.post("/cadastrar", response_class=HTMLResponse, name="cadastrar_usuario")
 async def cadastrar_usuario(
     request: Request,
@@ -68,7 +74,8 @@ async def cadastrar_usuario(
     senha: str = Form(..., min_length=6),
     db: mysql.connector.MySQLConnection = Depends(get_db)
 ):
-    """Processa o formulário de cadastro de usuário."""
+Processa o formulário de cadastro de usuário."""
+async def cadastrar_usuario(request:Request, nome , email,senha, db: mysql.connector.MySQLConnection = Depends(get_db)):
     try:
         usuario_data = UsuarioCreate(nome=nome, email=email, senha=senha)
         usuario_id = create_usuario(usuario_data, db)
@@ -87,7 +94,7 @@ async def cadastrar_usuario(
         
         set_flash(request, "Usuário cadastrado com sucesso!")
         return RedirectResponse(
-            url=router.url_path_for("listar_usuarios"),
+            url=request.url_for("listar_usuarios"),
             status_code=status.HTTP_303_SEE_OTHER
         )
     except mysql.connector.Error as e:
@@ -115,13 +122,15 @@ async def cadastrar_usuario(
             }
         )
 
+"""
 @router.get("/{id}", response_class=HTMLResponse, name="obter_usuario")
 async def obter_usuario(
     request: Request,
     id: int,
     db: mysql.connector.MySQLConnection = Depends(get_db)
 ):
-    """Exibe os detalhes de um usuário específico."""
+    Exibe os detalhes de um usuário específico."""
+async def obter_usuario(request:Request, id=int, db: mysql.connector.MySQLConnection = Depends(get_db)):
     try:
         usuario = get_usuario_by_id(id, db)
         if not usuario:
@@ -137,14 +146,16 @@ async def obter_usuario(
             status_code=500,
             detail="Erro ao carregar usuário"
         )
-
+        
+"""
 @router.get("/{id}/editar", response_class=HTMLResponse, name="form_editar_usuario")
 async def form_editar_usuario(
     request: Request,
     id: int,
     db: mysql.connector.MySQLConnection = Depends(get_db)
 ):
-    """Exibe o formulário de edição de usuário."""
+    Exibe o formulário de edição de usuário."""
+async def form_editar_usuario(request:Request, id: int, db:mysql.connector.MySQLConnection = Depends(get_db)):
     try:
         usuario = get_usuario_by_id(id, db)
         if not usuario:
@@ -160,7 +171,7 @@ async def form_editar_usuario(
             status_code=500,
             detail="Erro ao carregar formulário de edição"
         )
-
+"""
 @router.post("/{id}/editar", response_class=HTMLResponse, name="processar_edicao_usuario")
 async def processar_edicao_usuario(
     request: Request,
@@ -170,7 +181,8 @@ async def processar_edicao_usuario(
     senha: Optional[str] = Form(None, min_length=6),
     db: mysql.connector.MySQLConnection = Depends(get_db)
 ):
-    """Processa o formulário de edição de usuário."""
+    Processa o formulário de edição de usuário."""
+async def processar_edicao_usuario(request:Request, id:int, nome: str, email: str, senha: Optional[str], db: mysql.connector.MySQLConnection = Depends(get_db)):
     try:
         usuario_atual = get_usuario_by_id(id, db)
         
@@ -197,7 +209,7 @@ async def processar_edicao_usuario(
         
         set_flash(request, "Usuário atualizado com sucesso!")
         return RedirectResponse(
-            url=router.url_path_for("obter_usuario", id=id),
+            url=request.url_for("obter_usuario", id=id),
             status_code=status.HTTP_303_SEE_OTHER
         )
     except mysql.connector.Error as e:
@@ -226,14 +238,16 @@ async def processar_edicao_usuario(
                 "errors": [str(e)]
             }
         )
-
+        
+"""
 @router.post("/{id}/deletar", name="deletar_usuario")
 async def deletar_usuario(
     request: Request,
     id: int,
     db: mysql.connector.MySQLConnection = Depends(get_db)
 ):
-    """Remove um usuário do sistema."""
+    Remove um usuário do sistema."""
+async def deletar_usuario(request:Request, id:int, db:mysql.connector.MySQLConnection = Depends(get_db)):
     try:
         usuario = get_usuario_by_id(id, db)
         
@@ -255,7 +269,7 @@ async def deletar_usuario(
         
         set_flash(request, "Usuário excluído com sucesso!")
         return RedirectResponse(
-            url=router.url_path_for("listar_usuarios"),
+            url=request.url_for("listar_usuarios"),
             status_code=status.HTTP_303_SEE_OTHER
         )
     except Exception as e:

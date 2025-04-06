@@ -11,24 +11,33 @@ import mysql.connector
 
 templates = Jinja2Templates(directory="templates")
 
+
 class ProdutoSchema(BaseModel):
     nome: str
     descricao: Optional[str] = ""
     preco: float
     estoque: int
+
+
 """
 @router.get("/", response_class=HTMLResponse)
 def listar_produtos(request: Request, db: mysql.connector.MySQLConnection = Depends(get_db)):
 """
-def listar_produtos(request:Request, db: mysql.connector.MySQLConnection = Depends(get_db)):
+
+
+def listar_produtos(request: Request, db: mysql.connector.MySQLConnection = Depends(get_db)):
     produtos = get_all_produtos(db)
     return templates.TemplateResponse("produtos/lista.html", {"request": request, "produtos": produtos})
+
 
 """
 @router.get("/cadastrar", response_class=HTMLResponse)
 def form_cadastrar_produto(request: Request):"""
-def form_cadastrar_produto(request:Request):
+
+
+def form_cadastrar_produto(request: Request):
     return templates.TemplateResponse("produtos/cadastro.html", {"request": request})
+
 
 """
 @router.post("/cadastrar")
@@ -40,8 +49,11 @@ def cadastrar_produto(
     estoque: int = Form(...),
     db: mysql.connector.MySQLConnection = Depends(get_db),
 ): """
+
+
 def cadastrar_produto(request: Request, nome, descricao, preco, estoque, db: mysql.connector.MySQLConnection = Depends(get_db)):
-    produto_data = ProdutoCreate(nome=nome, descricao=descricao, preco=preco, estoque=estoque)
+    produto_data = ProdutoCreate(
+        nome=nome, descricao=descricao, preco=preco, estoque=estoque)
     produto_id = create_produto(produto_data, db)
 
     if produto_id:
@@ -60,23 +72,30 @@ def cadastrar_produto(request: Request, nome, descricao, preco, estoque, db: mys
         "errors": ["Erro ao cadastrar produto"]
     })
 
+
 """
 @router.get("/{id}", response_class=HTMLResponse)
 def obter_produto(request: Request, id: int, db: mysql.connector.MySQLConnection = Depends(get_db)): """
-def obter_produto(request:Request, id:int, db: mysql.connector.MySQLConnection = Depends(get_db)):
+
+
+def obter_produto(request: Request, id: int, db: mysql.connector.MySQLConnection = Depends(get_db)):
     produto = get_produto_by_id(id, db)
     if produto:
         return templates.TemplateResponse("produtos/detalhes.html", {"request": request, "produto": produto})
     raise HTTPException(status_code=404, detail="Produto não encontrado")
 
+
 """
 @router.get("/{id}/editar", response_class=HTMLResponse)
 def form_editar_produto(request: Request, id: int, db: mysql.connector.MySQLConnection = Depends(get_db)): """
-def form_editar_produto(request:Request, id:int, db: mysql.connector.MySQLConnection = Depends(get_db)):
+
+
+def form_editar_produto(request: Request, id: int, db: mysql.connector.MySQLConnection = Depends(get_db)):
     produto = get_produto_by_id(id, db)
     if not produto:
         raise HTTPException(status_code=404, detail="Produto não encontrado")
     return templates.TemplateResponse("produtos/editar.html", {"request": request, "produto": produto})
+
 
 """
 @router.post("/{id}/editar")
@@ -89,10 +108,13 @@ def editar_produto(
     estoque: int = Form(...),
     db: mysql.connector.MySQLConnection = Depends(get_db),
 ): """
-def editar_produto(request:Request, id:int, nome: str,descricao : str, preco : float, estoque:int , db: mysql.connector.MySQLConnection = Depends(get_db)):
+
+
+def editar_produto(request: Request, id: int, nome: str, descricao: str, preco: float, estoque: int, db: mysql.connector.MySQLConnection = Depends(get_db)):
     produto_atual = get_produto_by_id(id, db)
-    
-    produto_data = ProdutoCreate(nome=nome, descricao=descricao, preco=preco, estoque=estoque)
+
+    produto_data = ProdutoCreate(
+        nome=nome, descricao=descricao, preco=preco, estoque=estoque)
     affected_rows = update_produto(id, produto_data, db)
 
     if affected_rows > 0:
@@ -110,19 +132,24 @@ def editar_produto(request:Request, id:int, nome: str,descricao : str, preco : f
             request=request,
             db=db
         )
+
+        return RedirectResponse(url="/produtos", status_code=303)
+    elif affected_rows == 0:
         return RedirectResponse(url="/produtos", status_code=303)
 
-    raise HTTPException(status_code=400, detail="Nenhum produto foi atualizado")
+    raise HTTPException(
+        status_code=400, detail="Nenhum produto foi atualizado")
 
 
 """
 @router.post("/{id}/deletar")
 def deletar_produto(request: Request, id: int, db: mysql.connector.MySQLConnection = Depends(get_db)): """
-    # Obter produto antes de deletar para o log
+# Obter produto antes de deletar para o log
 
-def deletar_produto(request:Request, id:int, db: mysql.connector.MySQLConnection = Depends(get_db)):
+
+def deletar_produto(request: Request, id: int, db: mysql.connector.MySQLConnection = Depends(get_db)):
     produto = get_produto_by_id(id, db)
-    
+
     affected_rows = delete_produto(id, db)
     if affected_rows > 0:
         registrar_log(

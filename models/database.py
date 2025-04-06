@@ -1,25 +1,27 @@
 from fastapi import Depends
 import mysql.connector
-from config import Config
+from database.config import get_db_config
 import logging
 
 logger = logging.getLogger(__name__)
 
+
 def get_db():
-    config = Config()
-    conn = mysql.connector.connect(
-        host=config.MYSQL_HOST,
-        user=config.MYSQL_USER,
-        password=config.MYSQL_PASSWORD
-    )
-    
+    config = get_db_config()
     try:
-        # Verifica e cria o banco de dados se não existir
+        # Initial connection without database
+        conn = mysql.connector.connect(
+            host=config['host'],
+            user=config['user'],
+            password=config['password']
+        )
+
+        # Verify and create database if it doesn't exist
         cursor = conn.cursor()
-        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {config.MYSQL_DB}")
-        cursor.execute(f"USE {config.MYSQL_DB}")
-        
-        # Criação das tabelas
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {config['database']}")
+        cursor.execute(f"USE {config['database']}")
+
+        # Create tables
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS produtos (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -31,7 +33,7 @@ def get_db():
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         )
         """)
-        
+
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS usuarios (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -42,7 +44,7 @@ def get_db():
             data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         )
         """)
-        
+
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS logs (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -56,21 +58,26 @@ def get_db():
             ip_origem VARCHAR(45)
         )
         """)
-        
+
         conn.commit()
         cursor.close()
-        
-        # Reconecta usando o banco de dados específico
+        conn.close()
+
+        # Reconnect using the specific database
         conn = mysql.connector.connect(
-            host=config.MYSQL_HOST,
-            user=config.MYSQL_USER,
-            password=config.MYSQL_PASSWORD,
-            database=config.MYSQL_DB
+            host=config['host'],
+            user=config['user'],
+            password=config['password'],
+            database=config['database'],
+            port=config['port']
         )
+
         yield conn
+
     except Exception as e:
-        logger.error(f"Erro ao configurar banco de dados: {str(e)}")
+        logger.error(f"Erro ao configurar banco de dados log !!!!:  {str(e)}")
         raise
+
     finally:
-        if conn.is_connected():
+        if 'conn' in locals() and conn.is_connected():
             conn.close()

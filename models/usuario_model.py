@@ -3,24 +3,19 @@ from models.database import get_db
 import mysql.connector
 from passlib.context import CryptContext
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 class UsuarioBase(BaseModel):
     nome: str
     email: str
-
-class UsuarioCreate(UsuarioBase):
     senha: str
-
-    def hash_password(self):
-        self.senha = pwd_context.hash(self.senha)
+class UsuarioCreate(UsuarioBase):
+    pass
 
 class Usuario(UsuarioBase):
     id: int
 
 def create_usuario(usuario: UsuarioCreate, db: mysql.connector.MySQLConnection):
     try:
-        usuario.hash_password()
+        #usuario.hash_password()
         cursor = db.cursor()
         cursor.execute(
             "INSERT INTO usuarios (nome, email, senha) VALUES (%s, %s, %s)",
@@ -30,6 +25,8 @@ def create_usuario(usuario: UsuarioCreate, db: mysql.connector.MySQLConnection):
         return cursor.lastrowid
     except mysql.connector.Error as err:
         db.rollback()
+        if err.errno == 1062: 
+            err.msg = "Este e-mail já está cadastrado"
         raise ValueError(f"Erro ao criar usuário: {err.msg}")
 
 def get_usuario_by_id(id: int, db: mysql.connector.MySQLConnection):
@@ -53,7 +50,7 @@ def update_usuario(id: int, update_data: dict, db: mysql.connector.MySQLConnecti
         cursor = db.cursor()
         
         if 'senha' in update_data:
-            update_data['senha'] = pwd_context.hash(update_data['senha'])
+            update_data['senha'] = update_data['senha']
         
         set_clause = ", ".join([f"{key} = %s" for key in update_data.keys()])
         values = list(update_data.values())

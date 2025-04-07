@@ -1,9 +1,7 @@
-from fastapi import Depends
 import mysql.connector
 from database.config import get_db_config
-import logging
 
-logger = logging.getLogger(__name__)
+
 
 
 def get_db():
@@ -16,12 +14,10 @@ def get_db():
             password=config['password']
         )
 
-        # Verify and create database if it doesn't exist
         cursor = conn.cursor()
         cursor.execute(f"CREATE DATABASE IF NOT EXISTS {config['database']}")
         cursor.execute(f"USE {config['database']}")
 
-        # Create tables
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS produtos (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -44,40 +40,22 @@ def get_db():
             data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         )
         """)
-
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS logs (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            tipo_operacao VARCHAR(20) NOT NULL,
-            tabela_afetada VARCHAR(50) NOT NULL,
-            id_registro INT,
-            dados_anteriores TEXT,
-            dados_novos TEXT,
-            id_usuario INT,
-            data_operacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            ip_origem VARCHAR(45)
-        )
-        """)
-
         conn.commit()
         cursor.close()
         conn.close()
 
-        # Reconnect using the specific database
         conn = mysql.connector.connect(
             host=config['host'],
             user=config['user'],
             password=config['password'],
             database=config['database'],
             port=config['port']
-        )
-
+            )
         yield conn
 
     except Exception as e:
-        logger.error(f"Erro ao configurar banco de dados log !!!!:  {str(e)}")
+        print(f"Erro ao configurar banco de dados:  {e}")
         raise
-
     finally:
         if 'conn' in locals() and conn.is_connected():
             conn.close()

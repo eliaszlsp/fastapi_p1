@@ -10,12 +10,9 @@ def get_db_config():
         'user': os.getenv('DB_USER'),
         'password': os.getenv('DB_PASSWORD'),
         'database': os.getenv('DB_NAME'),
-        # Default MySQL port if not specified
         'port': int(os.getenv('DB_PORT', '3306'))
     }
-
     if not all([config['user'], config['password'], config['database']]):
         raise ValueError(
             "Variáveis de ambiente do banco de dados não configuradas corretamente")
-
     return config

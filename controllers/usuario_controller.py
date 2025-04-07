@@ -15,8 +15,8 @@ import mysql.connector
 from typing import Optional
 import logging
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+#logging.basicConfig(level=logging.INFO)
+#logger = logging.getLogger(__name__)
 
 templates = Jinja2Templates(directory="templates")
 
@@ -33,11 +33,6 @@ def get_flash(request: Request):
         return flash
     return None
 
-
-"""
-@router.get("/", response_class=HTMLResponse, name="listar_usuarios")
-async def listar_usuarios(request: Request, db: mysql.connector.MySQLConnection = Depends(get_db)):Lista todos os usuários."""
-    
 def get_all_users_controllers(request: Request, db: mysql.connector.MySQLConnection = Depends(get_db)):
     try:
         usuarios = get_all_usuarios(db)
@@ -48,33 +43,19 @@ def get_all_users_controllers(request: Request, db: mysql.connector.MySQLConnect
             {"request": request, "usuarios": usuarios, "messages": messages}
         )
     except Exception as e:
-        logger.error(f"Erro ao listar usuários: {str(e)}", exc_info=True)
+        print(f"Erro ao listar usuários: {str(e)}")
         return templates.TemplateResponse(
             "usuarios/lista.html",
             {"request": request, "usuarios": [], "messages": [{"message": "Erro ao carregar usuários", "category": "danger"}]}
         )
 
-"""
-@router.get("/cadastrar", response_class=HTMLResponse, name="form_cadastrar_usuario")
-async def form_cadastrar_usuario(request: Request):
-Exibe o formulário de cadastro de usuário."""
+
 def form_cadastrar_usuario(request:Request):
     return templates.TemplateResponse(
         "usuarios/cadastro.html",
         {"request": request, "errors": [], "form_data": {}}
     )
 
-
-"""
-@router.post("/cadastrar", response_class=HTMLResponse, name="cadastrar_usuario")
-async def cadastrar_usuario(
-    request: Request,
-    nome: str = Form(..., min_length=3, max_length=50),
-    email: str = Form(..., regex=r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"),
-    senha: str = Form(..., min_length=6),
-    db: mysql.connector.MySQLConnection = Depends(get_db)
-):
-Processa o formulário de cadastro de usuário."""
 async def cadastrar_usuario(request:Request, nome , email,senha, db: mysql.connector.MySQLConnection = Depends(get_db)):
     try:
         usuario_data = UsuarioCreate(nome=nome, email=email, senha=senha)
@@ -83,36 +64,25 @@ async def cadastrar_usuario(request:Request, nome , email,senha, db: mysql.conne
         if not usuario_id:
             raise ValueError("Não foi possível criar o usuário")
         
-        registrar_log(
-            tipo_operacao="CREATE",
-            tabela_afetada="usuarios",
-            id_registro=usuario_id,
-            dados_novos=usuario_data.dict(),
-            request=request,
-            db=db
-        )
-        
         set_flash(request, "Usuário cadastrado com sucesso!")
         return RedirectResponse(
             url=request.url_for("listar_usuarios"),
             status_code=status.HTTP_303_SEE_OTHER
         )
     except mysql.connector.Error as e:
-        if e.errno == 1062: 
-            error_msg = "Este e-mail já está cadastrado"
-        else:
-            error_msg = f"Erro no banco de dados: {str(e)}"
-        logger.error(error_msg)
+        print(e.errno, "aqui")
         return templates.TemplateResponse(
             "usuarios/cadastro.html",
             {
                 "request": request,
-                "errors": [error_msg],
+                "errors": [e],
                 "form_data": {"nome": nome, "email": email}
             }
         )
     except Exception as e:
-        logger.error(f"Erro ao cadastrar usuário: {str(e)}", exc_info=True)
+        print(f"Erro ao cadastrar usuário: {str(e)}")
+        print(e)
+        print("oi")
         return templates.TemplateResponse(
             "usuarios/cadastro.html",
             {
@@ -122,14 +92,6 @@ async def cadastrar_usuario(request:Request, nome , email,senha, db: mysql.conne
             }
         )
 
-"""
-@router.get("/{id}", response_class=HTMLResponse, name="obter_usuario")
-async def obter_usuario(
-    request: Request,
-    id: int,
-    db: mysql.connector.MySQLConnection = Depends(get_db)
-):
-    Exibe os detalhes de um usuário específico."""
 async def obter_usuario(request:Request, id=int, db: mysql.connector.MySQLConnection = Depends(get_db)):
     try:
         usuario = get_usuario_by_id(id, db)
@@ -141,20 +103,12 @@ async def obter_usuario(request:Request, id=int, db: mysql.connector.MySQLConnec
             {"request": request, "usuario": usuario}
         )
     except Exception as e:
-        logger.error(f"Erro ao obter usuário {id}: {str(e)}", exc_info=True)
+        print(f"Erro ao obter usuário {id}: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail="Erro ao carregar usuário"
         )
         
-"""
-@router.get("/{id}/editar", response_class=HTMLResponse, name="form_editar_usuario")
-async def form_editar_usuario(
-    request: Request,
-    id: int,
-    db: mysql.connector.MySQLConnection = Depends(get_db)
-):
-    Exibe o formulário de edição de usuário."""
 async def form_editar_usuario(request:Request, id: int, db:mysql.connector.MySQLConnection = Depends(get_db)):
     try:
         usuario = get_usuario_by_id(id, db)
@@ -166,22 +120,12 @@ async def form_editar_usuario(request:Request, id: int, db:mysql.connector.MySQL
             {"request": request, "usuario": usuario, "errors": []}
         )
     except Exception as e:
-        logger.error(f"Erro ao carregar formulário de edição para usuário {id}: {str(e)}", exc_info=True)
+        print(f"Erro ao carregar formulário de edição para usuário {id}: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail="Erro ao carregar formulário de edição"
         )
-"""
-@router.post("/{id}/editar", response_class=HTMLResponse, name="processar_edicao_usuario")
-async def processar_edicao_usuario(
-    request: Request,
-    id: int,
-    nome: str = Form(..., min_length=3, max_length=50),
-    email: str = Form(..., regex=r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"),
-    senha: Optional[str] = Form(None, min_length=6),
-    db: mysql.connector.MySQLConnection = Depends(get_db)
-):
-    Processa o formulário de edição de usuário."""
+
 async def processar_edicao_usuario(request:Request, id:int, nome: str, email: str, senha: Optional[str], db: mysql.connector.MySQLConnection = Depends(get_db)):
     try:
         usuario_atual = get_usuario_by_id(id, db)
@@ -217,7 +161,6 @@ async def processar_edicao_usuario(request:Request, id:int, nome: str, email: st
             error_msg = "Este e-mail já está cadastrado"
         else:
             error_msg = f"Erro no banco de dados: {str(e)}"
-        logger.error(error_msg)
         usuario = get_usuario_by_id(id, db)
         return templates.TemplateResponse(
             "usuarios/editar.html",
@@ -228,7 +171,7 @@ async def processar_edicao_usuario(request:Request, id:int, nome: str, email: st
             }
         )
     except Exception as e:
-        logger.error(f"Erro ao editar usuário {id}: {str(e)}", exc_info=True)
+        print(f"Erro ao editar usuário {id}: {str(e)}")
         usuario = get_usuario_by_id(id, db)
         return templates.TemplateResponse(
             "usuarios/editar.html",
@@ -239,14 +182,6 @@ async def processar_edicao_usuario(request:Request, id:int, nome: str, email: st
             }
         )
         
-"""
-@router.post("/{id}/deletar", name="deletar_usuario")
-async def deletar_usuario(
-    request: Request,
-    id: int,
-    db: mysql.connector.MySQLConnection = Depends(get_db)
-):
-    Remove um usuário do sistema."""
 async def deletar_usuario(request:Request, id:int, db:mysql.connector.MySQLConnection = Depends(get_db)):
     try:
         usuario = get_usuario_by_id(id, db)
@@ -273,7 +208,7 @@ async def deletar_usuario(request:Request, id:int, db:mysql.connector.MySQLConne
             status_code=status.HTTP_303_SEE_OTHER
         )
     except Exception as e:
-        logger.error(f"Erro ao deletar usuário {id}: {str(e)}", exc_info=True)
+        print(f"Erro ao deletar usuário {id}: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail="Erro ao deletar usuário"

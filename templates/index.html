@@ -1,8 +1,98 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="container text-center mt-5">
-        <h1>Bem-vindo ao Sistema de Gerenciamento</h1>
-        <p>Escolha uma opção no menu acima.</p>
+<div class="container">
+    <!-- Hero Section -->
+    <div class="text-center my-5 py-4">
+        <h1 class="display-3 fw-bold text-gradient">Sistema de Gerenciamento</h1>
+        
     </div>
+    <div class="row justify-content-center g-4">
+        <div class="col-lg-5">
+            <div class="card card-hover bg-glass border-0 overflow-hidden">
+                <div class="card-body p-5 text-center">
+                    <div class="icon-wrapper bg-primary-soft mb-4">
+                        <i class="bi bi-box-seam text-primary display-4"></i>
+                    </div>
+                    <h3 class="h2 mb-3">Produtos</h3>
+                    <p class="text-muted mb-4">Faça o Cadastro dos seus produtos</p>
+                    <a href="/produtos/" class="btn btn-primary btn-lg px-4 rounded-pill">
+                        Acessar <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Usuários -->
+        <div class="col-lg-5">
+            <div class="card card-hover bg-glass border-0 overflow-hidden">
+                <div class="card-body p-5 text-center">
+                    <div class="icon-wrapper bg-success-soft mb-4">
+                        <i class="bi bi-people text-success display-4"></i>
+                    </div>
+                    <h3 class="h2 mb-3">Usuários</h3>
+                    <p class="text-muted mb-4">Faça cadastro dos usuarios</p>
+                    <a href="/usuarios/" class="btn btn-success btn-lg px-4 rounded-pill">
+                        Acessar <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary-soft: rgba(13, 110, 253, 0.1);
+        --success-soft: rgba(25, 135, 84, 0.1);
+    }
+    
+    .text-gradient {
+        background: linear-gradient(45deg, #0d6efd, #20c997);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    
+    .bg-glass {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
+    }
+    
+    .card-hover {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        transform: translateY(0);
+    }
+    
+    .card-hover:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08) !important;
+    }
+    
+    .icon-wrapper {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+    
+    .bg-primary-soft {
+        background-color: var(--primary-soft);
+    }
+    
+    .bg-success-soft {
+        background-color: var(--success-soft);
+    }
+    
+    .rounded-pill {
+        border-radius: 50rem !important;
+    }
+    
+
+</style>
 {% endblock %}

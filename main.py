@@ -11,12 +11,10 @@ from routes.usuario_routes import router as usuario_router
 app = FastAPI(title="Sistema de Gerenciamento")
 
 
-app.add_middleware(SessionMiddleware, secret_key="sua_chave_secreta_32_caracteres")
-
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-app.include_router(produto_router, prefix="/produtos")
+app.include_router(produto_router, prefix="/produtos") 
 app.include_router(usuario_router) 
 
 @app.get("/", response_class=HTMLResponse)

@@ -5,9 +5,9 @@ from pydantic import BaseModel
 from typing import Optional
 from models.produto_model import ProdutoCreate, get_all_produtos, get_produto_by_id, create_produto, update_produto, delete_produto
 from models.database import get_db
-from models.log_model import registrar_log
+
 from controllers import produto_controller
-import mysql.connector
+
 
 router = APIRouter()
 

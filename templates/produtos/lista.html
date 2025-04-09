@@ -1,38 +1,89 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Lista de Produtos</h2>
-    <a href="{{ url_for('cadastrar_produto') }}" class="btn btn-primary mb-3">Cadastrar Novo Produto</a>
-    
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nome</th>
-                <th>Descrição</th>
-                <th>Preço</th>
-                <th>Estoque</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for produto in produtos %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Lista de Produtos</h2>
+        <a href="{{ url_for('cadastrar_produto') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Cadastrar Novo Produto
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover" id="tabelaProdutos">
+            <thead class="table-dark">
                 <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Descrição</th>
+                    <th>Preço</th>
+                    <th>Estoque</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for produto in produtos %}
+                <tr data-id="{{ produto.id }}">
                     <td>{{ produto.id }}</td>
                     <td>{{ produto.nome }}</td>
                     <td>{{ produto.descricao }}</td>
                     <td>R$ {{ "%.2f"|format(produto.preco) }}</td>
                     <td>{{ produto.estoque }}</td>
                     <td>
-                        <a href="{{ url_for('obter_produto', id=produto.id) }}" class="btn btn-info btn-sm">Ver</a>
-                        <a href="{{ url_for('editar_produto', id=produto.id) }}" class="btn btn-warning btn-sm">Editar</a>
-                        <form action="{{ url_for('deletar_produto', id=produto.id) }}" method="POST" style="display:inline;">
-                            <input type="hidden" name="_method" value="DELETE">
-                            <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-                        </form>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{{ url_for('obter_produto', id=produto.id) }}" class="btn btn-info"
+                                title="Visualizar">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ url_for('editar_produto', id=produto.id) }}" class="btn btn-warning"
+                                title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form action="{{ url_for('deletar_produto', id=produto.id) }}" method="POST"
+                                class="d-inline form-deletar-produto">
+                                <button type="submit" class="btn btn-danger" title="Excluir">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">Nenhum produto cadastrado</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll(".form-deletar-produto").forEach(form => {
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
+            if (!confirm("Tem certeza que deseja excluir este produto?")) return;
+
+            const formData = new FormData(form);
+            const url = form.action;
+            const row = form.closest("tr");
+
+            try {
+                const response = await fetch(url, {
+                    method: "DELETE",
+                    body: formData
+                });
+
+                if (response.ok) {
+                    row.remove();
+                } else {
+                    const texto = await response.text();
+                    alert("Erro ao excluir:\n" + texto);
+                }
+            } catch (error) {
+                alert("Erro de rede: " + error.message);
+            }
+        });
+    });
+</script>
 {% endblock %}

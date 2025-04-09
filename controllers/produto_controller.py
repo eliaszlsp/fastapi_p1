@@ -1,14 +1,21 @@
-from fastapi import APIRouter, Depends, HTTPException, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import Depends, HTTPException, Form, Request
+from fastapi.responses import  RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from typing import Optional
-from models.produto_model import ProdutoCreate, get_all_produtos, get_produto_by_id, create_produto, update_produto, delete_produto
+import starlette.status as status
+from models.produto_model import (
+    ProdutoCreate,
+    get_all_produtos,
+    get_produto_by_id,
+    create_produto,
+    update_produto,
+    delete_produto
+)
 from models.database import get_db
-from models.log_model import registrar_log
-import mysql.connector
 
 templates = Jinja2Templates(directory="templates")
+
 
 class ProdutoSchema(BaseModel):
     nome: str
@@ -16,93 +23,148 @@ class ProdutoSchema(BaseModel):
     preco: float
     estoque: int
 
-def listar_produtos(request: Request, db: mysql.connector.MySQLConnection = Depends(get_db)):
-    produtos = get_all_produtos(db)
-    return templates.TemplateResponse("produtos/lista.html", {"request": request, "produtos": produtos})
+
+def listar_produtos(request: Request, db=Depends(get_db)):
+    try:
+        produtos = get_all_produtos(db)
+        return templates.TemplateResponse("produtos/lista.html", {
+            "request": request,
+            "produtos": produtos
+        })
+    except Exception as e:
+        print(f"Erro ao acessar banco: {e}")
+        return templates.TemplateResponse("produtos/lista.html", {
+            "request": request,
+            "produtos": [],
+            "messages": [{
+                "message": "Erro ao carregar produtos do banco de dados.",
+                "category": "danger"
+            }]
+        }, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 def form_cadastrar_produto(request: Request):
-    return templates.TemplateResponse("produtos/cadastro.html", {"request": request})
-
-def cadastrar_produto(request: Request, nome, descricao, preco, estoque, db: mysql.connector.MySQLConnection = Depends(get_db)):
-    produto_data = ProdutoCreate(
-        nome=nome, descricao=descricao, preco=preco, estoque=estoque)
-    produto_id = create_produto(produto_data, db)
-
-    if produto_id:
-        registrar_log(
-            tipo_operacao="CREATE",
-            tabela_afetada="produtos",
-            id_registro=produto_id,
-            dados_novos=produto_data.dict(),
-            request=request,
-            db=db
-        )
-        return RedirectResponse(url="/produtos", status_code=303)
-
     return templates.TemplateResponse("produtos/cadastro.html", {
-        "request": request,
-        "errors": ["Erro ao cadastrar produto"]
+        "request": request
     })
 
-def obter_produto(request: Request, id: int, db: mysql.connector.MySQLConnection = Depends(get_db)):
-    produto = get_produto_by_id(id, db)
-    if produto:
-        return templates.TemplateResponse("produtos/detalhes.html", {"request": request, "produto": produto})
-    raise HTTPException(status_code=404, detail="Produto não encontrado")
 
-def form_editar_produto(request: Request, id: int, db: mysql.connector.MySQLConnection = Depends(get_db)):
-    produto = get_produto_by_id(id, db)
-    if not produto:
+def cadastrar_produto(
+    request: Request,
+    nome: str = Form(...),
+    descricao: str = Form(""),
+    preco: float = Form(...),
+    estoque: int = Form(...),
+    db=Depends(get_db)
+):
+    try:
+        produto_data = ProdutoCreate(
+            nome=nome, descricao=descricao, preco=preco, estoque=estoque)
+        produto_id = create_produto(produto_data, db)
+
+        if produto_id:
+            return RedirectResponse(url="/produtos", status_code=303)
+
+        raise ValueError("Erro ao cadastrar produto.")
+
+    except ValueError as e:
+        return templates.TemplateResponse("produtos/cadastro.html", {
+            "request": request,
+            "errors": [str(e)],
+            "form_data": {
+                "nome": nome,
+                "descricao": descricao,
+                "preco": preco,
+                "estoque": estoque
+            }
+        }, status_code=status.HTTP_400_BAD_REQUEST)
+
+
+def obter_produto(request: Request, id: int, db=Depends(get_db)):
+    try:
+        produto = get_produto_by_id(id, db)
+        if produto:
+            return templates.TemplateResponse("produtos/detalhes.html", {
+                "request": request,
+                "produto": produto
+            })
         raise HTTPException(status_code=404, detail="Produto não encontrado")
-    return templates.TemplateResponse("produtos/editar.html", {"request": request, "produto": produto})
+    except Exception as e:
+        print(f"Erro ao obter produto: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Erro ao encontrar o produto")
 
-def editar_produto(request: Request, id: int, nome: str, descricao: str, preco: float, estoque: int, db: mysql.connector.MySQLConnection = Depends(get_db)):
-    produto_atual = get_produto_by_id(id, db)
 
-    produto_data = ProdutoCreate(
-        nome=nome, descricao=descricao, preco=preco, estoque=estoque)
-    affected_rows = update_produto(id, produto_data, db)
+def form_editar_produto(request: Request, id: int, db=Depends(get_db)):
+    try:
+        produto = get_produto_by_id(id, db)
+        if not produto:
+            raise HTTPException(
+                status_code=404, detail="Produto não encontrado")
+        return templates.TemplateResponse("produtos/editar.html", {
+            "request": request,
+            "produto": produto
+        })
+    except Exception as e:
+        print(f"Erro ao carregar formulário de edição: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Formulario não encontrado")
 
-    if affected_rows > 0:
-        registrar_log(
-            tipo_operacao="UPDATE",
-            tabela_afetada="produtos",
-            id_registro=id,
-            dados_anteriores={
-                "nome": produto_atual["nome"],
-                "descricao": produto_atual["descricao"],
-                "preco": float(produto_atual["preco"]),
-                "estoque": produto_atual["estoque"]
-            },
-            dados_novos=produto_data.dict(),
-            request=request,
-            db=db
+
+def editar_produto(
+    request: Request,
+    id: int,
+    nome: str = Form(...),
+    descricao: str = Form(...),
+    preco: float = Form(...),
+    estoque: int = Form(...),
+    db=Depends(get_db)
+):
+    try:
+        produto_atual = get_produto_by_id(id, db)
+        if not produto_atual:
+            raise HTTPException(
+                status_code=404, detail="Produto não encontrado")
+
+        produto_data = ProdutoCreate(
+            nome=nome,
+            descricao=descricao,
+            preco=preco,
+            estoque=estoque
         )
-
-        return RedirectResponse(url="/produtos", status_code=303)
-    elif affected_rows == 0:
+        update_produto(id, produto_data, db)
         return RedirectResponse(url="/produtos", status_code=303)
 
-    raise HTTPException(
-        status_code=400, detail="Nenhum produto foi atualizado")
-
-def deletar_produto(request: Request, id: int, db: mysql.connector.MySQLConnection = Depends(get_db)):
-    produto = get_produto_by_id(id, db)
-
-    affected_rows = delete_produto(id, db)
-    if affected_rows > 0:
-        registrar_log(
-            tipo_operacao="DELETE",
-            tabela_afetada="produtos",
-            id_registro=id,
-            dados_anteriores={
-                "nome": produto["nome"],
-                "descricao": produto["descricao"],
-                "preco": float(produto["preco"]),
-                "estoque": produto["estoque"]
+    except ValueError as e:
+        return templates.TemplateResponse("produtos/editar.html", {
+            "request": request,
+            "produto": {
+                "id": id,
+                "nome": nome,
+                "descricao": descricao,
+                "preco": preco,
+                "estoque": estoque
             },
-            request=request,
-            db=db
+            "errors": [str(e)]
+        }, status_code=status.HTTP_400_BAD_REQUEST)
+
+
+def deletar_produto(request: Request, id: int, db=Depends(get_db)):
+    try:
+        produto = get_produto_by_id(id, db)
+        if produto is None:
+            raise HTTPException(
+                status_code=404, detail="Produto não encontrado")
+
+        affected_rows = delete_produto(id, db)
+        if affected_rows > 0:
+            return RedirectResponse(url="/produtos", status_code=303)
+
+        raise HTTPException(status_code=400, detail="Falha ao deletar produto")
+
+    except Exception as e:
+        print(f"Erro ao deletar produto: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Erro ao deletar o Produto"
         )
-        return RedirectResponse(url="/produtos", status_code=303)
-    raise HTTPException(status_code=404, detail="Produto não encontrado")

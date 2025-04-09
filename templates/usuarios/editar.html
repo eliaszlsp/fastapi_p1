@@ -15,10 +15,8 @@
     </div>
     {% endif %}
 
-    <form method="POST" action="{{ url_for('processar_edicao_usuario', id=usuario.id) }}" class="needs-validation"
-        novalidate>
+    <form id="editarUsuarioForm" class="needs-validation" novalidate>
         <div class="row g-3">
-            <!-- Validação do Nome -->
             <div class="col-md-6">
                 <label for="nome" class="form-label">Nome</label>
                 <input type="text" class="form-control" id="nome" name="nome" value="{{ usuario.nome }}" required
@@ -27,7 +25,6 @@
                 <div class="form-text">Por favor, insira um nome válido (mínimo 3 caracteres).</div>
             </div>
 
-            <!-- Validação do Email -->
             <div class="col-md-6">
                 <label for="email" class="form-label">Email</label>
                 <input type="email" class="form-control" id="email" name="email" value="{{ usuario.email }}" required
@@ -36,14 +33,12 @@
                 <div class="form-text">Por favor, insira um email válido.</div>
             </div>
 
-            <!-- Validação da Nova Senha -->
             <div class="col-md-6">
                 <label for="senha" class="form-label">Nova Senha</label>
                 <input type="password" class="form-control" id="senha" name="senha"
                     placeholder="Deixe em branco para manter a atual" minlength="6" oninput="this.setCustomValidity('')"
                     oninvalid="this.setCustomValidity('A senha deve ter no mínimo 6 caracteres.')">
                 <div class="form-text">Mínimo 6 caracteres</div>
-
             </div>
 
             <div class="col-12 mt-4">
@@ -59,4 +54,38 @@
         </div>
     </form>
 </div>
+
+<script>
+    document.getElementById("editarUsuarioForm").addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const form = event.target;
+
+        if (!form.checkValidity()) {
+            form.classList.add('was-validated');
+            return;
+        }
+
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch("{{ url_for('processar_edicao_usuario', id=usuario.id) }}", {
+                method: "PUT",
+                body: formData
+            });
+
+            if (response.ok) {
+                window.location.href = "{{ url_for('obter_usuario', id=usuario.id) }}";
+            } else {
+                const texto = await response.text();
+                if (response.status == 404) {
+                    alert(" nenhum usuario foi editado")
+                }
+
+            }
+        } catch (error) {
+            alert("Erro de rede: " + error.message);
+        }
+    });
+</script>
 {% endblock %}

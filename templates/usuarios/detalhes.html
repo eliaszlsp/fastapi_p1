@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container mt-4">
     <h2 class="mb-4">Detalhes do Usuário</h2>
-    
+
     <div class="card">
         <div class="card-body">
             <div class="row">
@@ -15,19 +15,17 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="d-flex gap-2 mt-4">
                 <a href="{{ url_for('form_editar_usuario', id=usuario.id) }}" class="btn btn-warning">
                     <i class="bi bi-pencil"></i> Editar
                 </a>
-                
-                <form method="POST" action="{{ url_for('deletar_usuario', id=usuario.id) }}" class="d-inline">
-                    <button type="submit" class="btn btn-danger" 
-                            onclick="return confirm('Tem certeza que deseja excluir este usuário?')">
-                        <i class="bi bi-trash"></i> Excluir
-                    </button>
-                </form>
-                
+
+                <!-- Botão de excluir com função JS -->
+                <button class="btn btn-danger" onclick="excluirUsuario('{{ usuario.id }}')">
+                    <i class="bi bi-trash"></i> Excluir
+                </button>
+
                 <a href="{{ url_for('listar_usuarios') }}" class="btn btn-secondary ms-auto">
                     <i class="bi bi-arrow-left"></i> Voltar para Lista
                 </a>
@@ -35,4 +33,16 @@
         </div>
     </div>
 </div>
+
+<script>
+    function excluirUsuario(id) {
+        if (confirm('Tem certeza que deseja excluir este usuário?')) {
+            const form = document.createElement('form');
+            form.method = 'delete';
+            form.action = `/usuarios/${id}/deletar`; // ajuste conforme sua rota real
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+</script>
 {% endblock %}

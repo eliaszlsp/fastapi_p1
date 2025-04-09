@@ -1,15 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
-from typing import Optional
-from models.produto_model import ProdutoCreate, get_all_produtos, get_produto_by_id, create_produto, update_produto, delete_produto
+from fastapi import APIRouter, Depends, Form, Request
+from fastapi.responses import HTMLResponse
 from models.database import get_db
-from models.log_model import registrar_log
-from controllers import produto_controller
-import mysql.connector
 
-router = APIRouter()
+from controllers import produto_controller
+
+
+router = APIRouter( tags=["Produtos"]  
+)
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -44,7 +41,7 @@ def form_editar_produto(request: Request, id: int, db=Depends(get_db)):
     return produto_controller.form_editar_produto(request, id, db)
 
 
-@router.post("/{id}/editar")
+@router.put("/{id}/editar")
 def editar_produto(
     request: Request,
     id: int,
@@ -57,6 +54,6 @@ def editar_produto(
     return produto_controller.editar_produto(request, id, nome, descricao, preco, estoque, db)
 
 
-@router.post("/{id}/deletar")
+@router.delete("/{id}/deletar")
 def deletar_produto(request: Request, id: int, db=Depends(get_db)):
     return produto_controller.deletar_produto(request, id, db)

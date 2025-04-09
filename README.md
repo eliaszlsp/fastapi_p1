@@ -36,10 +36,9 @@ A aplicação foi desenvolvida seguindo o padrão de arquitetura MVC (Model-View
 
 ### 📦 Model
 
-Os modelos representam a estrutura de dados da aplicação e a lógica de negócios. Eles são responsáveis por:
+Os modelos representam a estrutura de dados da aplicação. Eles são responsáveis por:
 - Definir a estrutura das entidades (produtos e usuários)
 - Interagir com o banco de dados
-- Implementar regras de negócio específicas
 
 ### 🖼️ View
 
@@ -52,33 +51,12 @@ As views são responsáveis pela apresentação dos dados ao usuário. No nosso 
 
 Os controllers gerenciam o fluxo da aplicação, processando requisições, interagindo com os modelos e retornando respostas:
 
-<details>
-<summary>Exemplo conceitual de um controller</summary>
-
-```python
-# Exemplo conceitual de um controller
-def listar_produtos():
-    produtos = Produto.buscar_todos(db)
-    return render_template('produtos/lista.html', produtos=produtos)
-
-def cadastrar_produto():
-    if request.method == 'POST':
-        # Processar dados do formulário
-        produto = Produto(None, nome, descricao, preco, quantidade)
-        produto.salvar(db)
-        return redirect('/produtos')
-    return render_template('produtos/cadastrar.html')
-```
-</details>
-
----
-
 ## 🔧 Tecnologias Utilizadas
 
 | Categoria | Tecnologia |
 |-----------|------------|
 | **Backend** | Python com FastAPI |
-| **Banco de Dados** | SQL - Sistema de gerenciamento de banco de dados |
+| **Banco de Dados** | MySQL - Sistema de gerenciamento de banco de dados |
 | **Frontend** | HTML e CSS para interface do usuário |
 | **Validação** | Pydantic - Biblioteca Python para validação de dados |
 
@@ -148,13 +126,13 @@ A validação de campos é um aspecto crucial da aplicação, garantindo que ape
 
 ### 🔒 Segurança
 
-**Desafio**: Proteger a aplicação contra vulnerabilidades comuns.
+**Desafio**: Validação de campos com tratativas de erros.
 
-**Solução**: Implementação de validação de entrada
+**Solução**: Implementação de tratativa de erros
 
 ### 👥 Experiência do Usuário
 
-**Desafio**: Criar uma interface intuitiva e responsiva.
+**Desafio**: Criar uma interface para o usuário.
 
 **Solução**: Desenvolvimento de uma interface limpa com CSS, fornecendo feedback claro para ações do usuário, validação de formulários e mensagens de erro informativas.
 
@@ -162,11 +140,26 @@ A validação de campos é um aspecto crucial da aplicação, garantindo que ape
 
 ## 🚀 Como Executar
 
-1. Clone o repositório
-2. Copie o arquivo `.env.example` para `.env` e configure as variáveis de ambiente e o banco de dados
-3. Instale as dependências: `pip install -r requirements.txt`
-4. Execute a aplicação: `python main.py`
-5. Acesse a aplicação em `http://localhost:8000`
+1. Clonar o repositório
+
+   ```
+   git clone https://github.com/eliaszlsp/fastapi_p1
+
+2. Criar e Ativar o Ambiente Virtual
+
+   ```
+   python -m venv venv
+   venv\scripts\activate
+
+3. Instalar os Requerimentos
+
+   ```
+   pip install -r requirements.txt
+
+4. Executar o Projeto (Lembre-se de criar o banco de dados 'mydb' antes)
+
+   ```
+   uvicorn main:app --reload ou python main.py
 
 ---
 
@@ -203,6 +196,12 @@ Os testes foram realizados com o Swagger UI para verificar:
 
 ### Testes dos Endpoints de Produtos
 
+#### GET /produtos/ - Listar todos os produtos 
+
+O endpoint mostra todos os usuários criados 
+
+![listar_produtos](https://github.com/user-attachments/assets/eca95055-cbed-45e6-9324-be99b598cad4)
+
 #### GET /produtos/{id} - Obter um produto específico
 
 Este endpoint retorna os detalhes de um produto específico com base no ID fornecido.
@@ -221,7 +220,9 @@ Esse endpoint permite a criação de um novo produto com validação de campos.
 
 Esse endpoint permite a atualização dos dados de um produto existente.
 
-![editar_produto](https://github.com/user-attachments/assets/cf79e02c-3610-42f3-8306-603329f539f9)
+![put_editar_produto](https://github.com/user-attachments/assets/a7e3311e-253f-42c9-812a-e903efd4198c)
+
+![put_editar_produto2](https://github.com/user-attachments/assets/3fde4167-1d65-48dc-af71-0e44a675ecb1)
 
 #### DELETE /produtos/{id} - Excluir um produto
 

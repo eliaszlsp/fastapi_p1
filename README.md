@@ -297,14 +297,14 @@ Todos os endpoints foram testados, demonstrando que a API está funcionando conf
   <tr>
       <td align="center">
       <a href="https://github.com/eliaszlsp">
-        <img src="![116045632](https://github.com/user-attachments/assets/9274a457-817e-42d6-854a-365a25d590f2)" width="100px;" alt="Elias Lopes"/><br />
+        <img src="https://avatars.githubusercontent.com/u/116045632?v=4" width="100px;" alt="Elias Lopes"/><br />
         <sub><b>Elias Lopes</b></sub>
       </a>
       <br />
     </td>
     <td align="center">
       <a href="https://github.com/Carlos-Leon3l">
-        <img src="![foto](https://github.com/user-attachments/assets/f4db751f-b334-4a8a-b3c1-308f1cb05191)" width="100px;" alt="Carlos Leonel"/><br />
+        <img src="https://avatars.githubusercontent.com/u/178098701?v=4" width="100px;" alt="Carlos Leonel"/><br />
         <sub><b>Carlos Leonel</b></sub>
       </a>
       <br />
